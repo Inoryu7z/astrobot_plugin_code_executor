@@ -1,0 +1,122 @@
+{
+    "timeout_seconds": {
+      "description": "代码执行超时时间（秒）",
+      "type": "int",
+      "default": 10,
+      "hint": "设置代码执行的最大等待时间，防止死循环"
+    },
+    "max_output_length": {
+      "description": "输出结果最大长度",
+      "type": "int",
+      "default": 2000,
+      "hint": "限制返回结果的字符数，避免输出过长"
+    },
+    "enable_plots": {
+      "description": "是否启用图表生成",
+      "type": "bool",
+      "default": true,
+      "hint": "启用后可以生成matplotlib图表并返回图片"
+    },
+    "output_directory": {
+      "description": "代码生成的默认工作目录",
+      "type": "string",
+      "default": "",
+      "hint": "留空则使用插件内置的默认路径。如果docker用户报错请尝试填写 /Astrbot/data 或者 /data。AI将在此目录中创建和读取文件。"
+    },
+    "enable_webui": {
+      "description": "是否启用WebUI服务",
+      "type": "bool",
+      "default": false,
+      "hint": "默认关闭，避免端口冲突。启用后可以通过WebUI查看历史记录"
+    },
+    "webui_port": {
+      "description": "WebUI服务端口",
+      "type": "int",
+      "default": 10000,
+      "hint": "设置历史记录WebUI的访问端口，建议使用冷门端口避免端口冲突"
+    },
+    "enable_local_route_sending": {
+      "description": "启用本地路由发送",
+      "type": "bool",
+      "default": false,
+      "hint": "启用后将把文件挂载到本地路由进行网络文件发送，适用于AstrBot和发送框架不在同一网络的情况"
+    },
+    "local_route_host": {
+      "description": "本地路由发送主机IP地址",
+      "type": "string",
+      "default": "localhost",
+      "hint": "本地路由发送时使用的主机IP地址，默认为localhost。如需支持Docker或跨网络访问，请填写局域网IP地址（如192.168.1.100）"
+    },
+    "allow_all_users": {
+      "description": "允许所有用户调用插件工具",
+      "type": "bool",
+      "default": false,
+      "hint": "启用后，非管理员也可以调用代码执行工具。存在安全风险，请谨慎开启。"
+    },
+    "enable_error_analysis": {
+      "description": "启用错误代码分析",
+      "type": "bool",
+      "default": false,
+      "hint": "启用后，当代码执行失败时会调用辅助模型分析错误并提供修复建议"
+    },
+    "error_analysis_provider_id": {
+      "description": "错误分析辅助模型提供商ID",
+      "type": "string",
+      "default": "",
+      "hint": "用于错误分析的LLM提供商ID，留空则使用当前默认提供商。建议使用快速响应的模型如GPT-3.5或Claude Haiku"
+    },
+    "error_analysis_model": {
+      "description": "错误分析使用的模型名称",
+      "type": "string",
+      "default": "",
+      "hint": "指定用于错误分析的具体模型名称，留空则使用提供商的默认模型"
+    },
+    "non_admin_safety_enabled": {
+      "description": "非管理员安全拦截",
+      "type": "bool",
+      "default": true,
+      "hint": "非管理员调用函数工具时，基于关键词拦截危险操作"
+    },
+    "restricted_keywords": {
+      "description": "禁用关键词(逗号分隔)",
+      "type": "string",
+      "default": "os.system, subprocess, popen, shell=true, eval(, exec(, shutil.rmtree, os.remove(, os.rmdir(",
+      "hint": "匹配到即阻止执行；可用逗号或换行分隔"
+    },
+    "restricted_libraries": {
+      "description": "禁用库(逗号分隔)",
+      "type": "string",
+      "default": "subprocess, socket, ctypes, psutil, paramiko",
+      "hint": "非管理员不注入，且代码中导入会被拦截"
+    },
+    "user_output_visibility": {
+      "description": "用户可见输出模式",
+      "type": "string",
+      "default": "silent",
+      "hint": "选择发给最终用户的内容：silent 只通过LLM工具反馈给agent，用户聊天窗口完全安静；summary 仅在最后发一条极简结果；verbose 保持当前全量输出（调试用）"
+    },
+    "napcat_container_path": {
+      "description": "NapCat容器内的共享目录路径（用于跨容器文件发送）",
+      "type": "string",
+      "default": "/app/napcat_shared",
+      "hint": "NapCat容器中挂载的共享目录路径。AstrBot生成文件时用output_directory路径，发送给NapCat时会自动映射为该路径。例如：AstrBot路径=/AstrBot/data/napcat_shared → NapCat路径=/app/napcat_shared"
+    },
+    "astrbot_container_path": {
+      "description": "AstrBot容器内的共享目录路径",
+      "type": "string",
+      "default": "/AstrBot/data/napcat_shared",
+      "hint": "AstrBot容器中挂载的共享目录路径，用于与NapCat容器共享文件。文件发送时会将此路径替换为napcat_container_path"
+    },
+    "file_send_retry_count": {
+      "description": "文件发送失败重试次数",
+      "type": "int",
+      "default": 2,
+      "hint": "文件发送失败时自动重试的次数，避免因文件系统同步延迟导致的发送失败"
+    },
+    "file_send_retry_delay": {
+      "description": "文件发送重试间隔（秒）",
+      "type": "float",
+      "default": 0.5,
+      "hint": "两次重试之间的等待时间，给文件系统同步留出时间"
+    }
+  }
