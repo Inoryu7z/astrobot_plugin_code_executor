@@ -424,30 +424,55 @@ class CodeExecutorPlugin(Star):
         - Tasks solvable by `fetch_url` (fetching raw web content) without code.
         - Vague requests where execution goals/artifacts are not specified.
 
-        【FILE HANDLING — MUST】
-        - Save all new files under `SAVE_DIR` via `os.path.join(SAVE_DIR, 'filename')`.
-        - All downloads/saves (web files, PDFs, office docs, archives, binary streams) MUST write to `SAVE_DIR`. Do NOT write to the working directory or other absolute paths unless the user explicitly provides a destination.
-        - When no page count/range is specified for multi‑page content (e.g., PDF), download/save the entire file to `SAVE_DIR` and append the saved absolute path to `FILES_TO_SEND`.
-        - `SAVE_DIR` is provided by the external environment and is read‑only for your code. Do NOT construct, redefine, or override it (do not write `SAVE_DIR = ...`).
-        - Build paths only via `os.path.join(SAVE_DIR, 'filename')`; do NOT change working directory or write to other absolute paths unless explicitly instructed.
-        - To send: append absolute paths to global `FILES_TO_SEND` (do NOT define it). Once appended, files are auto‑sent and the task is complete; do not re‑invoke for the same task.
-        - Existing files may be sent by appending their absolute paths.
+        ═══════════════════════════════════════════════════════════════
+        【CRITICAL - FILE SENDING MECHANISM】⚠️ 必读 ⚠️
+        ═══════════════════════════════════════════════════════════════
+        
+        用户无法看到你生成的文件，除非你执行以下两个步骤：
+        
+        **步骤1：保存文件到 SAVE_DIR**
+        ```python
+        file_path = os.path.join(SAVE_DIR, 'filename.ext')  # 必须使用 SAVE_DIR
+        # ... 保存文件到 file_path ...
+        ```
+        
+        **步骤2：将文件路径添加到 FILES_TO_SEND**
+        ```python
+        FILES_TO_SEND.append(file_path)  # 这一步触发文件发送！
+        ```
+        
+        ❌ 常见错误：
+        - 只 print 路径，没有 append 到 FILES_TO_SEND
+        - 使用自己构造的路径而不是 SAVE_DIR
+        - 定义了 FILES_TO_SEND = []（它是预定义的全局变量，直接用）
+        
+        ✅ 正确示例（生成PDF并发送）：
+        ```python
+        from reportlab.pdfgen import canvas
+        pdf_path = os.path.join(SAVE_DIR, 'report.pdf')
+        c = canvas.Canvas(pdf_path)
+        c.drawString(100, 750, "Hello World")
+        c.save()
+        FILES_TO_SEND.append(pdf_path)  # ← 这一行是关键！
+        print(f'PDF已生成: {pdf_path}')
+        ```
 
-        【IMAGE HANDLING — MUST】
+        ═══════════════════════════════════════════════════════════════
+
+        【IMAGE HANDLING】
         - `img_url`: list of image URLs from the current message.
-        - Download each URL with timeouts; optionally process via PIL/cv2; save under `SAVE_DIR`; append saved paths to `FILES_TO_SEND`.
+        - Download each URL with timeouts; save under `SAVE_DIR`; append paths to `FILES_TO_SEND`.
 
         【STOP CONDITIONS】
         - End when code runs and produces output or appends files to `FILES_TO_SEND`.
-        - If neither occurs, return an explicit "task completed" message. Do not loop or re‑call for the same task.
+        - If neither occurs, return an explicit "task completed" message.
 
         【ERROR & RETRY】
-        - On failure, use system error analysis to fix code and immediately retry until success or safe terminal state.
+        - On failure, use system error analysis to fix code and immediately retry.
 
-        【ENVIRONMENT & REQUIREMENTS】
-        - Broadly available libraries; filesystem R/W where accessible.
-        - Network calls allowed; always set timeouts and, when appropriate, retries.
-        - Cross‑platform paths/drives; check paths and handle exceptions.
+        【ENVIRONMENT】
+        - Broadly available libraries (pandas, numpy, matplotlib, PIL, requests, etc.)
+        - Network calls allowed; always set timeouts.
         - Code must be self‑contained (no interactive/external dependencies).
 
         Args:
